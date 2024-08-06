@@ -5,7 +5,7 @@ from .base import *
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "integr_business_analytic_production",
+        "NAME": "ba_dev2",
         "USER": "postgres",
         "PASSWORD": "123456",
         "HOST": "localhost",
