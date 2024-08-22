@@ -2,15 +2,15 @@ from django.db import models
 
 
 class Company(models.Model):
-    name_ru = models.CharField(max_length=1024, verbose_name="Название организации на русском")
-    name_kz = models.CharField(max_length=1024, verbose_name="Название организации на казахском")
-    register_date = models.DateField(verbose_name="Время создания организации")
-    ceo = models.CharField(max_length=1024, verbose_name="Руководитель организации")
+    name_ru = models.CharField(max_length=1024, null=True, verbose_name="Название организации на русском")
+    name_kz = models.CharField(max_length=1024, null=True, verbose_name="Название организации на казахском")
+    register_date = models.DateField(null=True, verbose_name="Время создания организации")
+    ceo = models.CharField(max_length=1024, null=True, verbose_name="Руководитель организации")
     company_bin = models.CharField(max_length=12, unique=True, verbose_name="БИН")
-    pay_nds = models.BooleanField(verbose_name="Плательщик НДС")
-    tax_risk = models.CharField(max_length=32, verbose_name="Степень риска налогоплательщика")
-    address_ru = models.CharField(max_length=1024, verbose_name="Адрес организации на русском")
-    address_kz = models.CharField(max_length=1024, verbose_name="Адрес организации на казахском")
+    pay_nds = models.BooleanField(null=True, verbose_name="Плательщик НДС")
+    tax_risk = models.CharField(max_length=32, null=True, verbose_name="Степень риска налогоплательщика")
+    address_ru = models.CharField(max_length=1024, null=True, verbose_name="Адрес организации на русском")
+    address_kz = models.CharField(max_length=1024, null=True, verbose_name="Адрес организации на казахском")
     phone_number = models.CharField(max_length=128, null=True, verbose_name="Номер телефона")
     email = models.CharField(max_length=254, null=True, verbose_name="Электронная почта")
     krp = models.ForeignKey("Krp", on_delete=models.PROTECT, null=True, verbose_name="КРП")

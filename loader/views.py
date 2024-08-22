@@ -1,6 +1,7 @@
 import requests
 import time
 from datetime import datetime
+from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db import transaction
@@ -31,21 +32,57 @@ class LoadCompanyData(APIView):
         time.sleep(1)
         gos_zakup_response = requests.get(goz_zakup_url, params=goz_zakup_params)
         
-        print(company_bin)
+        
         if company_response.status_code == 200 and gos_zakup_response.status_code == 200:
             # {"company_bin": "070240000158"}970340003085
             
             c_data = company_response.json()
             g_data = gos_zakup_response.json()
-            name_ru = c_data["basicInfo"]["titleRu"]["value"]
-            name_kz = c_data["basicInfo"]["titleKz"]["value"]
-            register_date = c_data["basicInfo"]["registrationDate"]["value"]
-            ceo = c_data["basicInfo"]["ceo"]["value"]["title"]
-            company_bin = c_data["basicInfo"]["bin"]
-            pay_nds = c_data["basicInfo"]["isNds"]["value"]
-            tax_risk = c_data["basicInfo"]["degreeOfRisk"]["value"]
-            address_ru = c_data["basicInfo"]["addressRu"]["value"]
-            address_kz = c_data["basicInfo"]["addressKz"]["value"]
+            try:
+                name_ru = c_data["basicInfo"]["titleRu"]["value"]
+            except:
+                name_ru = None
+            
+            try:
+                name_kz = c_data["basicInfo"]["titleKz"]["value"]
+            except:
+                name_kz = None
+            
+            try:
+                register_date = datetime.fromisoformat(c_data["basicInfo"]["registrationDate"]["value"]).date()
+            except:
+                register_date = None
+            
+            try:
+                ceo = c_data["basicInfo"]["ceo"]["value"]["title"]
+            except:
+                ceo = None
+            
+            try:
+                company_bin = c_data["basicInfo"]["bin"]
+            except:
+                return Response({"error": "БИН не найден."}, status=status.HTTP_400_BAD_REQUEST)
+            
+            try:
+                pay_nds = c_data["basicInfo"]["isNds"]["value"]
+            except:
+                pay_nds = None
+            
+            try:
+                tax_risk = c_data["basicInfo"]["degreeOfRisk"]["value"]
+            except:
+                tax_risk = None
+            
+            try:
+                address_ru = c_data["basicInfo"]["addressRu"]["value"]
+            except:
+                address_ru = None
+            
+            try:
+                address_kz = c_data["basicInfo"]["addressKz"]["value"]
+            except:
+                address_kz = None
+            
             try:
                 phone_number = c_data["gosZakupContacts"]["phone"][0]["value"]
             except:
@@ -59,36 +96,77 @@ class LoadCompanyData(APIView):
             except:
                 email = None
             
+            try:
+                krp_code = c_data["basicInfo"]["krp"]["value"]["value"]
+                krp_name = c_data["basicInfo"]["krp"]["value"]["description"]
+            except:
+                krp_code = None
+                krp = None
+            
+            try:
+                kse_code = c_data["basicInfo"]["kse"]["value"]["value"]
+                kse_name = c_data["basicInfo"]["kse"]["value"]["description"]
+            except:
+                kse_code = None
+                kse = None
 
-            krp_code = c_data["basicInfo"]["krp"]["value"]["value"]
-            krp_name = c_data["basicInfo"]["krp"]["value"]["description"]
-            kse_code = c_data["basicInfo"]["kse"]["value"]["value"]
-            kse_name = c_data["basicInfo"]["kse"]["value"]["description"]
-            kfc_code = c_data["basicInfo"]["kfc"]["value"]["value"]
-            kfc_name = c_data["basicInfo"]["kfc"]["value"]["description"]
-            kato_code = c_data["basicInfo"]["kato"]["value"]["value"]
-            kato_name = c_data["basicInfo"]["kato"]["value"]["description"]
-            primary_oked = c_data["basicInfo"]["primaryOKED"]["value"]
-            secondary_okeds = c_data["basicInfo"]["secondaryOKED"]["value"]
+            
+            try:
+                kfc_code = c_data["basicInfo"]["kfc"]["value"]["value"]
+                kfc_name = c_data["basicInfo"]["kfc"]["value"]["description"]
+            except:
+                kfc_code = None
+                kfc = None
+            
+            
+            try:
+                kato_code = c_data["basicInfo"]["kato"]["value"]["value"]
+                kato_name = c_data["basicInfo"]["kato"]["value"]["description"]
+            except:
+                kato_code = None
+                kato = None
+            
+            
+            try:
+                primary_oked = c_data["basicInfo"]["primaryOKED"]["value"]
+            except:
+                primary_oked = None
+            
+            
+            try:
+                secondary_okeds = c_data["basicInfo"]["secondaryOKED"]["value"]
+            except:
+                secondary_okeds = None
+            
+
             taxes = c_data["taxes"]["taxGraph"]
             nds_info = c_data["taxes"]["ndsGraph"]
             gos_zakup_as_supplier_info = g_data["asSupplier"]
             gos_zakup_as_customer_info = g_data["asCustomer"]
             
             
-            
-            register_date = datetime.fromisoformat(register_date).date()
-            
             try:
                 company = Company.objects.get(company_bin=company_bin)
+                return Response({"message": f"Компания уже загружена. БИН: {company_bin}"}, status=status.HTTP_200_OK)
             except:
                 with transaction.atomic():
-                    krp, krp_created = Krp.objects.get_or_create(krp_code=krp_code, defaults={'krp_name': krp_name})
-                    kse, kse_created = Kse.objects.get_or_create(kse_code=kse_code, defaults={'kse_name': kse_name})
-                    kfc, kfc_created = Kfc.objects.get_or_create(kfc_code=kfc_code, defaults={'kfc_name': kfc_name})
-                    kato, kato_created = Kato.objects.get_or_create(kato_code=kato_code, defaults={'kato_name': kato_name})
-                    oked_code, oked_name = primary_oked.split(" ", 1)
-                    oked_obj, oked_created = Oked.objects.get_or_create(oked_code=oked_code, defaults={'oked_name': oked_name})
+                    print(company_bin)
+                    if krp_code:
+                        krp, krp_created = Krp.objects.get_or_create(krp_code=krp_code, defaults={'krp_name': krp_name})
+                    if kse_code:
+                        kse, kse_created = Kse.objects.get_or_create(kse_code=kse_code, defaults={'kse_name': kse_name})
+                    if kfc_code:
+                        kfc, kfc_created = Kfc.objects.get_or_create(kfc_code=kfc_code, defaults={'kfc_name': kfc_name})
+                    if kato_code:
+                        kato, kato_created = Kato.objects.get_or_create(kato_code=kato_code, defaults={'kato_name': kato_name})
+                    
+                    if primary_oked:
+                        try:
+                            oked_code, oked_name = primary_oked.split(" ", 1)
+                            oked_obj, oked_created = Oked.objects.get_or_create(oked_code=oked_code, defaults={'oked_name': oked_name})
+                        except:
+                            oked_obj = None
+                        
 
                     company = Company(name_ru=name_ru,
                                     name_kz=name_kz,
@@ -108,14 +186,14 @@ class LoadCompanyData(APIView):
                                     primary_oked=oked_obj)
                     
                     company.save()
-                    
-                    if not secondary_okeds:
+                    if secondary_okeds:
                         for oked_info in secondary_okeds:
-                            oked_code, oked_name = oked_info.split(" ", 1)
-                            oked_obj, _ = Oked.objects.get_or_create(oked_code=oked_code, defaults={'oked_name': oked_name})
-                            company.secondary_okeds.add(oked_obj)
-                    
-                    
+                            try:
+                                oked_code, oked_name = oked_info.split(" ", 1)
+                                oked_obj, _ = Oked.objects.get_or_create(oked_code=oked_code, defaults={'oked_name': oked_name})
+                                company.secondary_okeds.add(oked_obj)
+                            except:
+                                pass
                     for tax in taxes:
                         year = tax["year"]
                         value = tax["value"]
@@ -135,40 +213,9 @@ class LoadCompanyData(APIView):
                         year = gos_zakup_as_customer["year"]
                         value = gos_zakup_as_customer["value"]
                         GosZakupCustomer.objects.create(year=year, value=value, company=company)
-                
-            # print(taxes)
-            # print(nds_info)
-            # print(gos_zakup_as_supplier_info)
-            # print(gos_zakup_as_customer_info)
-            
-
-            
-            
-            # print(name_ru)
-            # print(name_kz)
-            # print(register_date)
-            # print(ceo)
-            # print(company_bin)
-            # print(pay_nds)
-            # print(tax_risk)
-            # print(address_ru)
-            # print(address_kz)
-            # print(phone_number)
-            # print(email)
-            # print(krp_code)
-            # print(krp_name)
-            # print(kse_code)
-            # print(kse_name)
-            # print(kfc_code)
-            # print(kfc_name)
-            # print(kato_code)
-            # print(kato_name)
-            # print(primary_oked)
-            # print(secondary_okeds)
-
-            
+    
             
         else:
-            return Response("PRGAPP failed")
+            return Response({"error": "PRGAPP failed", "company_bin": company_bin}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-        return Response(c_data)
+        return Response({"message": f"Данные компании загружены. БИН: {company_bin}"}, status=status.HTTP_200_OK)

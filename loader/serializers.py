@@ -7,8 +7,8 @@ class CompanyBinSerializer(serializers.Serializer):
 
     def validate(self, data):
         company_bin = data.get("company_bin")
-        if len(company_bin) != 12 or not company_bin.isdigit():
-            raise serializers.ValidationError("Некорректный БИН. Он должен содержать ровно 12 цифр с ведущими нолями.")
+        if not company_bin.isdigit():
+            raise serializers.ValidationError("Некорректный БИН.")
         return data
 
 
