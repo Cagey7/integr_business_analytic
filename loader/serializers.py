@@ -28,3 +28,74 @@ class CompanySerializer(serializers.Serializer):
         except:
             raise serializers.ValidationError("Компании с таким БИНом не существует")
         return data
+
+
+class KrpSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Krp
+        exclude = ["id"]
+
+
+class KseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Kse
+        exclude = ["id"]
+
+
+class KfcSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Kfc
+        exclude = ["id"]
+
+
+class KatoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Kato
+        exclude = ["id"]
+
+
+class OkedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Oked
+        exclude = ["id"]
+
+
+class TaxesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Taxes
+        exclude = ["id"]
+
+
+class NdsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Nds
+        exclude = ["id"]
+
+
+class GosZakupSupplierSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GosZakupSupplier
+        exclude = ["id"]
+
+
+class GosZakupCustomerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GosZakupCustomer
+        exclude = ["id"]
+
+
+class CompanySerializer(serializers.ModelSerializer):
+    krp = KrpSerializer()
+    kse = KseSerializer()
+    kfc = KfcSerializer()
+    kato = KatoSerializer()
+    primary_oked = OkedSerializer()
+    secondary_okeds = OkedSerializer(many=True)
+    taxes = TaxesSerializer(many=True)
+    nds = NdsSerializer(many=True)
+    goszakupsupplier = GosZakupSupplierSerializer(many=True)
+    goszakupcustomer = GosZakupCustomerSerializer(many=True)
+
+    class Meta:
+        model = Company
+        exclude = ["id"]

@@ -1,3 +1,5 @@
-**/__pycache__/
+**/postgres_data
 .env
-venv
+venv/
+db.sqlite3
+**/__pycache__

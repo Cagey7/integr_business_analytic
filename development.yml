@@ -1,0 +1,11 @@
+version: "3.9"
+services:
+  integr_business_analytic:
+    build: .
+    image: integr_business_analytic
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/code
+    environment:
+      - ENV=DEV

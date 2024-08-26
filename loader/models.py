@@ -72,23 +72,23 @@ class Oked(models.Model):
 class Taxes(models.Model):
     year = models.IntegerField(verbose_name="Год")
     value = models.FloatField(verbose_name="Значение")
-    company = models.ForeignKey("Company", on_delete=models.PROTECT, verbose_name="Организация")
+    company = models.ForeignKey("Company", on_delete=models.PROTECT, verbose_name="Организация", related_name="taxes")
 
 
 class Nds(models.Model):
     year = models.IntegerField(verbose_name="Год")
     value = models.FloatField(verbose_name="Значение")
-    company = models.ForeignKey("Company", on_delete=models.PROTECT, verbose_name="Организация")
+    company = models.ForeignKey("Company", on_delete=models.PROTECT, verbose_name="Организация", related_name="nds")
 
 
 class GosZakupSupplier(models.Model):
     year = models.IntegerField(verbose_name="Год")
     value = models.FloatField(verbose_name="Значение")
-    company = models.ForeignKey("Company", on_delete=models.PROTECT, verbose_name="Организация")
+    company = models.ForeignKey("Company", on_delete=models.PROTECT, verbose_name="Организация", related_name="goszakupsupplier")
 
 
 class GosZakupCustomer(models.Model):
     year = models.IntegerField(verbose_name="Год")
     value = models.FloatField(verbose_name="Значение")
-    company = models.ForeignKey("Company", on_delete=models.PROTECT, verbose_name="Организация")
+    company = models.ForeignKey("Company", on_delete=models.PROTECT, verbose_name="Организация", related_name="goszakupcustomer")
 

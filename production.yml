@@ -1,0 +1,21 @@
+version: "3.9"
+services:
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - integr_business_analytic
+    env_file:
+      - .env
+    environment:
+      - NGINX_PROXY=http://integr_business_analytic:${APP_PORT}
+  integr_business_analytic:
+    build: .
+    image: integr_business_analytic
+    env_file:
+      - .env
+    ports:
+      - ${APP_PORT}:${APP_PORT}
+    environment:
+      - ENV=PROD

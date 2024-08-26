@@ -4,6 +4,7 @@ from datetime import datetime
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.core.serializers import serialize
 from django.db import transaction
 from .serializers import *
 from .models import *
@@ -147,7 +148,130 @@ class LoadCompanyData(APIView):
             
             try:
                 company = Company.objects.get(company_bin=company_bin)
-                return Response({"message": f"Компания уже загружена. БИН: {company_bin}"}, status=status.HTTP_200_OK)
+                if krp_code:
+                    krp, krp_created = Krp.objects.get_or_create(krp_code=krp_code, defaults={'krp_name': krp_name})
+                if kse_code:
+                    kse, kse_created = Kse.objects.get_or_create(kse_code=kse_code, defaults={'kse_name': kse_name})
+                if kfc_code:
+                    kfc, kfc_created = Kfc.objects.get_or_create(kfc_code=kfc_code, defaults={'kfc_name': kfc_name})
+                if kato_code:
+                    kato, kato_created = Kato.objects.get_or_create(kato_code=kato_code, defaults={'kato_name': kato_name})
+                
+                if primary_oked:
+                    try:
+                        oked_code, oked_name = primary_oked.split(" ", 1)
+                        oked_obj, oked_created = Oked.objects.get_or_create(oked_code=oked_code, defaults={'oked_name': oked_name})
+                    except:
+                        oked_obj = None
+                
+                update_data = {
+                    "name_ru": name_ru,
+                    "name_kz": name_kz,
+                    "register_date": register_date,
+                    "ceo": ceo,
+                    "pay_nds": pay_nds,
+                    "tax_risk": tax_risk,
+                    "address_ru": address_ru,
+                    "address_kz": address_kz,
+                    "phone_number": phone_number,
+                    "email": email,
+                    "krp": krp,
+                    "kse": kse,
+                    "kfc": kfc,
+                    "kato": kato,
+                    "primary_oked": oked_obj
+                }
+                
+                filtered_update_data = {key: value for key, value in update_data.items() if value is not None}
+                print(filtered_update_data)
+                company.name_kz = name_kz
+                company.name_ru = name_ru
+                company.register_date = register_date
+                company.ceo = ceo
+                company.pay_nds = pay_nds
+                company.tax_risk = tax_risk
+                company.address_ru = address_ru
+                company.address_kz = address_kz
+                company.phone_number = phone_number
+                company.email = email
+                company.krp = krp
+                company.kse = kse
+                company.kato = kato
+                company.primary_oked = oked_obj                
+                
+                if secondary_okeds:
+                    old_secondary_okeds = list(company.secondary_okeds.values_list('oked_code', flat=True))
+                    new_secondary_okeds = []
+                    for oked_info in secondary_okeds:
+                        try:
+                            oked_code, oked_name = oked_info.split(" ", 1)
+                        except:
+                            continue
+                        try:
+                            new_secondary_okeds.append(int(oked_code))
+                        except:
+                            pass
+                    
+                    if old_secondary_okeds != new_secondary_okeds:
+                        for oked_obj in list(company.secondary_okeds.all()):
+                            company.secondary_okeds.remove(oked_obj)
+                        for oked_info in secondary_okeds:
+                            try:
+                                oked_code, oked_name = oked_info.split(" ", 1)
+                                oked_obj, _ = Oked.objects.get_or_create(oked_code=oked_code, defaults={'oked_name': oked_name})
+                                company.secondary_okeds.add(oked_obj)
+                            except:
+                                pass
+                
+                try:
+                    latest_taxes_year = max(list(Taxes.objects.filter(company=company).values_list('year', flat=True)))
+                except:
+                    latest_taxes_year = 0
+
+
+                for tax in taxes:
+                    year = tax["year"]
+                    value = tax["value"]
+                    if latest_taxes_year < year:
+                        Taxes.objects.create(year=year, value=value, company=company)
+                
+                try:
+                    latest_nds_year = max(list(Nds.objects.filter(company=company).values_list('year', flat=True)))
+                except:
+                    latest_nds_year = 0
+                
+                for nds in nds_info:
+                    year = nds["year"]
+                    value = nds["value"]
+                    if latest_nds_year < year:
+                        Nds.objects.create(year=year, value=value, company=company)
+                
+                try:
+                    latest_gzas_year = max(list(GosZakupSupplier.objects.filter(company=company).values_list('year', flat=True)))
+                except:
+                    latest_gzas_year = 0
+                
+                for gos_zakup_as_supplier in gos_zakup_as_supplier_info:
+                    year = gos_zakup_as_supplier["year"]
+                    value = gos_zakup_as_supplier["value"]
+                    if latest_gzas_year < year:
+                        GosZakupSupplier.objects.create(year=year, value=value, company=company)
+                
+                try:
+                    latest_gzac_year = max(list(GosZakupCustomer.objects.filter(company=company).values_list('year', flat=True)))
+                except:
+                    latest_gzac_year = 0
+                    
+                
+                for gos_zakup_as_customer in gos_zakup_as_customer_info:
+                    year = gos_zakup_as_customer["year"]
+                    value = gos_zakup_as_customer["value"]
+                    if latest_gzac_year < year:
+                        GosZakupCustomer.objects.create(year=year, value=value, company=company)
+
+                company.save()
+                
+                return Response({"message": f"Данные компании изменились. БИН: {company_bin}"}, status=status.HTTP_200_OK)
             except:
                 with transaction.atomic():
                     print(company_bin)
@@ -194,6 +318,7 @@ class LoadCompanyData(APIView):
                                 company.secondary_okeds.add(oked_obj)
                             except:
                                 pass
+
                     for tax in taxes:
                         year = tax["year"]
                         value = tax["value"]
@@ -219,3 +344,15 @@ class LoadCompanyData(APIView):
             return Response({"error": "PRGAPP failed", "company_bin": company_bin}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         return Response({"message": f"Данные компании загружены. БИН: {company_bin}"}, status=status.HTTP_200_OK)
+
+
+    
+class GetCompanyData(APIView):
+    def get(self, request, company_bin):
+        company_bin = company_bin.zfill(12)
+        try:
+            company = Company.objects.get(company_bin=company_bin)
+            company_data = CompanySerializer(company).data
+            return Response({"message": company_data}, status=status.HTTP_200_OK)
+        except Company.DoesNotExist:
+            return Response({"error": "Company not found"}, status=status.HTTP_404_NOT_FOUND)
