@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'integr_business_analytic.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'integr_business_analytic.settings.production')
 
 application = get_wsgi_application()

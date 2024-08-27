@@ -4,13 +4,14 @@ from datetime import datetime
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.core.serializers import serialize
+from rest_framework.permissions import IsAuthenticated
 from django.db import transaction
 from .serializers import *
 from .models import *
 
 
 class LoadCompanyData(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         serializer = CompanyBinSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -183,7 +184,6 @@ class LoadCompanyData(APIView):
                 }
                 
                 filtered_update_data = {key: value for key, value in update_data.items() if value is not None}
-                print(filtered_update_data)
                 company.name_kz = name_kz
                 company.name_ru = name_ru
                 company.register_date = register_date
@@ -274,7 +274,6 @@ class LoadCompanyData(APIView):
                 return Response({"message": f"Данные компании изменились. БИН: {company_bin}"}, status=status.HTTP_200_OK)
             except:
                 with transaction.atomic():
-                    print(company_bin)
                     if krp_code:
                         krp, krp_created = Krp.objects.get_or_create(krp_code=krp_code, defaults={'krp_name': krp_name})
                     if kse_code:
@@ -348,6 +347,7 @@ class LoadCompanyData(APIView):
 
     
 class GetCompanyData(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request, company_bin):
         company_bin = company_bin.zfill(12)
         try:
