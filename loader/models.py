@@ -24,6 +24,9 @@ class Company(models.Model):
     def __str__(self):
         return f"{self.name_ru}"
 
+    class Meta:
+        db_table = "companies"
+
 
 class Krp(models.Model):
     krp_code = models.IntegerField(unique=True, verbose_name="КРП код")
@@ -32,7 +35,11 @@ class Krp(models.Model):
     
     def __str__(self):
         return f"{self.krp_name}"
+
+    class Meta:
+        db_table = "krp"
     
+
 class Kse(models.Model):
     kse_code = models.IntegerField(unique=True, verbose_name="КСЕ код")
     kse_name = models.CharField(max_length=512, verbose_name="КСЕ название")
@@ -40,6 +47,9 @@ class Kse(models.Model):
 
     def __str__(self):
         return f"{self.kse_name}"
+
+    class Meta:
+        db_table = "kse"
 
 
 class Kfc(models.Model):
@@ -50,6 +60,9 @@ class Kfc(models.Model):
     def __str__(self):
         return f"{self.kfc_name}"
 
+    class Meta:
+        db_table = "kfc"
+
 
 class Kato(models.Model):
     kato_code = models.IntegerField(unique=True, verbose_name="КАТО коде")
@@ -58,6 +71,9 @@ class Kato(models.Model):
 
     def __str__(self):
         return f"{self.kato_name}"
+
+    class Meta:
+        db_table = "kato"
 
 
 class Oked(models.Model):
@@ -68,11 +84,17 @@ class Oked(models.Model):
     def __str__(self):
         return f"{self.oked_name}"
 
+    class Meta:
+        db_table = "oked"
+
 
 class Taxes(models.Model):
     year = models.IntegerField(verbose_name="Год")
     value = models.FloatField(verbose_name="Значение")
     company = models.ForeignKey("Company", on_delete=models.PROTECT, verbose_name="Организация", related_name="taxes")
+
+    class Meta:
+        db_table = "taxes"
 
 
 class Nds(models.Model):
@@ -80,11 +102,17 @@ class Nds(models.Model):
     value = models.FloatField(verbose_name="Значение")
     company = models.ForeignKey("Company", on_delete=models.PROTECT, verbose_name="Организация", related_name="nds")
 
+    class Meta:
+        db_table = "nds"
+
 
 class GosZakupSupplier(models.Model):
     year = models.IntegerField(verbose_name="Год")
     value = models.FloatField(verbose_name="Значение")
     company = models.ForeignKey("Company", on_delete=models.PROTECT, verbose_name="Организация", related_name="goszakupsupplier")
+
+    class Meta:
+        db_table = "gos_zakup_supplier"
 
 
 class GosZakupCustomer(models.Model):
@@ -92,3 +120,5 @@ class GosZakupCustomer(models.Model):
     value = models.FloatField(verbose_name="Значение")
     company = models.ForeignKey("Company", on_delete=models.PROTECT, verbose_name="Организация", related_name="goszakupcustomer")
 
+    class Meta:
+        db_table = "gos_zakup_customer"
