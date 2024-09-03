@@ -40,6 +40,11 @@ class LoadCompanyData(APIView):
             
             c_data = company_response.json()
             g_data = gos_zakup_response.json()
+            
+            is_deleted = c_data["basicInfo"]["isDeleted"]
+            if is_deleted:
+                return Response({"message": f"Компания удалена. БИН: {company_bin}"}, status=status.HTTP_200_OK)
+            
             try:
                 name_ru = c_data["basicInfo"]["titleRu"]["value"]
             except:
