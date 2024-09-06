@@ -3,6 +3,8 @@ import time
 from datetime import datetime
 from rest_framework import status
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
+from rest_framework import filters
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.db import transaction
@@ -351,13 +353,9 @@ class LoadCompanyData(APIView):
 
 
     
-class GetCompanyData(APIView):
+class GetCompanyData(ListAPIView):
     permission_classes = [IsAuthenticated]
-    def get(self, request, company_bin):
-        company_bin = company_bin.zfill(12)
-        try:
-            company = Company.objects.get(company_bin=company_bin)
-            company_data = CompanySerializer(company).data
-            return Response({"message": company_data}, status=status.HTTP_200_OK)
-        except Company.DoesNotExist:
-            return Response({"error": "Company not found"}, status=status.HTTP_404_NOT_FOUND)
+    queryset = Company.objects.all()
+    serializer_class = CompanySerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["name_ru", "name_kz", "company_bin"]
