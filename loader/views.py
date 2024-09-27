@@ -33,7 +33,6 @@ class LoadCompanyData(APIView):
         }
         
         company_response = requests.get(company_url, params=company_params)
-        time.sleep(1)
         gos_zakup_response = requests.get(goz_zakup_url, params=goz_zakup_params)
         
         
