@@ -346,7 +346,9 @@ class LoadCompanyData(APIView):
     
             
         else:
-            return Response({"error": "PRGAPP failed", "company_bin": company_bin}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"error": "PRGAPP failed", "company_bin": company_bin, 
+                             "company_error_code": company_response.status_code, 
+                             "gos_zakup_error_code": gos_zakup_response.status_code}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         return Response({"message": f"Данные компании загружены. БИН: {company_bin}"}, status=status.HTTP_200_OK)
 
